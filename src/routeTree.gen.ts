@@ -12,7 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProjectsIndexRouteImport } from './routes/projects/index'
+import { Route as ProjectsProjectIdProfessorsRouteImport } from './routes/projects/$projectId/professors'
+import { Route as ProjectsProjectIdMateriasRouteImport } from './routes/projects/$projectId/materias'
 import { Route as ProjectsProjectIdGroupsRouteImport } from './routes/projects/$projectId/groups'
+import { Route as ProjectsProjectIdGroupsGroupIdRouteImport } from './routes/projects/$projectId/groups/$groupId'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -29,44 +32,95 @@ const ProjectsIndexRoute = ProjectsIndexRouteImport.update({
   path: '/projects/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProjectsProjectIdProfessorsRoute =
+  ProjectsProjectIdProfessorsRouteImport.update({
+    id: '/projects/$projectId/professors',
+    path: '/projects/$projectId/professors',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ProjectsProjectIdMateriasRoute =
+  ProjectsProjectIdMateriasRouteImport.update({
+    id: '/projects/$projectId/materias',
+    path: '/projects/$projectId/materias',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ProjectsProjectIdGroupsRoute = ProjectsProjectIdGroupsRouteImport.update({
   id: '/projects/$projectId/groups',
   path: '/projects/$projectId/groups',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProjectsProjectIdGroupsGroupIdRoute =
+  ProjectsProjectIdGroupsGroupIdRouteImport.update({
+    id: '/$groupId',
+    path: '/$groupId',
+    getParentRoute: () => ProjectsProjectIdGroupsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/projects/': typeof ProjectsIndexRoute
-  '/projects/$projectId/groups': typeof ProjectsProjectIdGroupsRoute
+  '/projects/$projectId/groups': typeof ProjectsProjectIdGroupsRouteWithChildren
+  '/projects/$projectId/materias': typeof ProjectsProjectIdMateriasRoute
+  '/projects/$projectId/professors': typeof ProjectsProjectIdProfessorsRoute
+  '/projects/$projectId/groups/$groupId': typeof ProjectsProjectIdGroupsGroupIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/projects': typeof ProjectsIndexRoute
-  '/projects/$projectId/groups': typeof ProjectsProjectIdGroupsRoute
+  '/projects/$projectId/groups': typeof ProjectsProjectIdGroupsRouteWithChildren
+  '/projects/$projectId/materias': typeof ProjectsProjectIdMateriasRoute
+  '/projects/$projectId/professors': typeof ProjectsProjectIdProfessorsRoute
+  '/projects/$projectId/groups/$groupId': typeof ProjectsProjectIdGroupsGroupIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/projects/': typeof ProjectsIndexRoute
-  '/projects/$projectId/groups': typeof ProjectsProjectIdGroupsRoute
+  '/projects/$projectId/groups': typeof ProjectsProjectIdGroupsRouteWithChildren
+  '/projects/$projectId/materias': typeof ProjectsProjectIdMateriasRoute
+  '/projects/$projectId/professors': typeof ProjectsProjectIdProfessorsRoute
+  '/projects/$projectId/groups/$groupId': typeof ProjectsProjectIdGroupsGroupIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/projects/' | '/projects/$projectId/groups'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/projects/'
+    | '/projects/$projectId/groups'
+    | '/projects/$projectId/materias'
+    | '/projects/$projectId/professors'
+    | '/projects/$projectId/groups/$groupId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/projects' | '/projects/$projectId/groups'
-  id: '__root__' | '/' | '/login' | '/projects/' | '/projects/$projectId/groups'
+  to:
+    | '/'
+    | '/login'
+    | '/projects'
+    | '/projects/$projectId/groups'
+    | '/projects/$projectId/materias'
+    | '/projects/$projectId/professors'
+    | '/projects/$projectId/groups/$groupId'
+  id:
+    | '__root__'
+    | '/'
+    | '/login'
+    | '/projects/'
+    | '/projects/$projectId/groups'
+    | '/projects/$projectId/materias'
+    | '/projects/$projectId/professors'
+    | '/projects/$projectId/groups/$groupId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
-  ProjectsProjectIdGroupsRoute: typeof ProjectsProjectIdGroupsRoute
+  ProjectsProjectIdGroupsRoute: typeof ProjectsProjectIdGroupsRouteWithChildren
+  ProjectsProjectIdMateriasRoute: typeof ProjectsProjectIdMateriasRoute
+  ProjectsProjectIdProfessorsRoute: typeof ProjectsProjectIdProfessorsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -92,6 +146,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/projects/$projectId/professors': {
+      id: '/projects/$projectId/professors'
+      path: '/projects/$projectId/professors'
+      fullPath: '/projects/$projectId/professors'
+      preLoaderRoute: typeof ProjectsProjectIdProfessorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/projects/$projectId/materias': {
+      id: '/projects/$projectId/materias'
+      path: '/projects/$projectId/materias'
+      fullPath: '/projects/$projectId/materias'
+      preLoaderRoute: typeof ProjectsProjectIdMateriasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/projects/$projectId/groups': {
       id: '/projects/$projectId/groups'
       path: '/projects/$projectId/groups'
@@ -99,14 +167,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsProjectIdGroupsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/projects/$projectId/groups/$groupId': {
+      id: '/projects/$projectId/groups/$groupId'
+      path: '/$groupId'
+      fullPath: '/projects/$projectId/groups/$groupId'
+      preLoaderRoute: typeof ProjectsProjectIdGroupsGroupIdRouteImport
+      parentRoute: typeof ProjectsProjectIdGroupsRoute
+    }
   }
 }
+
+interface ProjectsProjectIdGroupsRouteChildren {
+  ProjectsProjectIdGroupsGroupIdRoute: typeof ProjectsProjectIdGroupsGroupIdRoute
+}
+
+const ProjectsProjectIdGroupsRouteChildren: ProjectsProjectIdGroupsRouteChildren =
+  {
+    ProjectsProjectIdGroupsGroupIdRoute: ProjectsProjectIdGroupsGroupIdRoute,
+  }
+
+const ProjectsProjectIdGroupsRouteWithChildren =
+  ProjectsProjectIdGroupsRoute._addFileChildren(
+    ProjectsProjectIdGroupsRouteChildren,
+  )
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
-  ProjectsProjectIdGroupsRoute: ProjectsProjectIdGroupsRoute,
+  ProjectsProjectIdGroupsRoute: ProjectsProjectIdGroupsRouteWithChildren,
+  ProjectsProjectIdMateriasRoute: ProjectsProjectIdMateriasRoute,
+  ProjectsProjectIdProfessorsRoute: ProjectsProjectIdProfessorsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
