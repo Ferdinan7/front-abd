@@ -1,5 +1,12 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { MoreHorizontal, Pencil, Trash2, BookOpen, Users } from "lucide-react";
+import {
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  Settings,
+  Building,
+  Users,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +21,9 @@ interface ProjectCardProps {
   color: string;
   onEdit?: () => void;
   onDelete?: () => void;
+  onViewConfiguracion?: () => void;
+  onViewSalones?: () => void;
+  onViewColaboradores?: () => void;
 }
 
 export function ProjectCard({
@@ -22,6 +32,9 @@ export function ProjectCard({
   color,
   onEdit,
   onDelete,
+  onViewConfiguracion,
+  onViewSalones,
+  onViewColaboradores,
 }: ProjectCardProps) {
   return (
     <Card className="rounded-2xl border-0 shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer bg-white p-0 gap-0">
@@ -53,6 +66,36 @@ export function ProjectCard({
             className="w-48 bg-white"
             onClick={(e) => e.stopPropagation()}
           >
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation();
+                onViewConfiguracion?.();
+              }}
+              className="cursor-pointer flex items-center gap-2 font-medium"
+            >
+              <Settings className="w-4 h-4 text-gray-500" />
+              Configuración
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation();
+                onViewSalones?.();
+              }}
+              className="cursor-pointer flex items-center gap-2 font-medium"
+            >
+              <Building className="w-4 h-4 text-gray-500" />
+              Salones
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation();
+                onViewColaboradores?.();
+              }}
+              className="cursor-pointer flex items-center gap-2 font-medium"
+            >
+              <Users className="w-4 h-4 text-gray-500" />
+              Colaboradores
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={(e) => {

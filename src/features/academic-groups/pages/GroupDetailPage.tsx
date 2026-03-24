@@ -3,7 +3,8 @@ import { useParams, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { useGrupos } from "@/hooks/use-grupos";
 import { useMaterias } from "@/hooks/use-materias";
-import { useProfesores } from "@/hooks/use-profesores";
+import { useColaboradores } from "@/hooks/use-colaboradores";
+import { useSalones } from "@/hooks/use-salones";
 import {
   useAsignaciones,
   useCreateAsignacion,
@@ -21,9 +22,9 @@ import {
   AlertTriangle,
   CalendarDays,
   RefreshCw,
-  Clock,
   User,
   GraduationCap,
+  Building,
 } from "lucide-react";
 
 const DIAS = [
@@ -42,17 +43,6 @@ const DIA_COLORS = [
   "bg-cyan-50 border-cyan-100",
 ];
 
-const BLOQUE_COLORS = [
-  "bg-blue-100 text-blue-800",
-  "bg-indigo-100 text-indigo-800",
-  "bg-violet-100 text-violet-800",
-  "bg-emerald-100 text-emerald-800",
-  "bg-amber-100 text-amber-800",
-  "bg-rose-100 text-rose-800",
-  "bg-teal-100 text-teal-800",
-  "bg-orange-100 text-orange-800",
-];
-
 export function GroupDetailPage() {
   const { projectId: carreraId, groupId } = useParams({
     from: "/projects/$projectId/groups/$groupId",
@@ -60,6 +50,7 @@ export function GroupDetailPage() {
 
   const [materiaId, setMateriaId] = useState("");
   const [profesorId, setProfesorId] = useState("");
+  const [salonId, setSalonId] = useState("");
 
   const { data: grupos, isLoading: loadingGrupo } = useGrupos(carreraId);
   const grupo = grupos?.find((g) => g.id === groupId);
@@ -74,7 +65,9 @@ export function GroupDetailPage() {
   const { mutate: deleteAsig } = useDeleteAsignacion(groupId);
 
   const { data: materias, isLoading: loadingMat } = useMaterias(carreraId);
-  const { data: profesores, isLoading: loadingProf } = useProfesores();
+  const { data: colaboradores, isLoading: loadingProf } =
+    useColaboradores(carreraId);
+  const { data: salones, isLoading: loadingSalones } = useSalones(carreraId);
 
   const { data: horario, isLoading: loadingHorario } = useHorario(groupId);
   const {
@@ -92,7 +85,7 @@ export function GroupDetailPage() {
     const slots = new Set<string>();
     DIAS.forEach((d) => {
       (horario[d.key] || []).forEach((b) => {
-        slots.add(`${b.hora_inicio}-${b.hora_fin}`);
+        slots.add(`${b.hora_inicio.slice(0, 5)}-${b.hora_fin.slice(0, 5)}`);
       });
     });
     return Array.from(slots).sort();
@@ -101,11 +94,16 @@ export function GroupDetailPage() {
   const handleAddAsig = () => {
     if (!materiaId || !profesorId) return;
     createAsig(
-      { materia_id: materiaId, profesor_id: profesorId },
+      {
+        materia_id: materiaId,
+        profesor_id: profesorId,
+        ...(salonId ? { salon_id: salonId } : {}),
+      },
       {
         onSuccess: () => {
           setMateriaId("");
           setProfesorId("");
+          setSalonId("");
         },
       },
     );
@@ -159,7 +157,7 @@ export function GroupDetailPage() {
           </li>
           <li>
             <Link
-              to="/projects/$projectId/groups/"
+              to="/projects/$projectId/groups"
               params={{ projectId: carreraId }}
               className="hover:text-gray-900 transition-colors"
             >
@@ -232,7 +230,7 @@ export function GroupDetailPage() {
                   Sin asignaciones
                 </p>
                 <p className="text-xs leading-relaxed">
-                  Agrega materias y profesores para poder generar el horario.
+                  Agrega materias y colaboradores para poder generar el horario.
                 </p>
               </div>
             )}
@@ -249,6 +247,9 @@ export function GroupDetailPage() {
                     | undefined;
                   const prof = asig.profesor as
                     | { nombre_completo?: string }
+                    | undefined;
+                  const salon = asig.salon as
+                    | { nombre?: string; edificio?: string }
                     | undefined;
                   const materiaNombre = mat?.nombre ?? asig.materia_id;
                   const profesorNombre =
@@ -273,9 +274,16 @@ export function GroupDetailPage() {
                             </span>
                           )}
                         </div>
-                        <div className="flex items-center gap-1 text-xs text-gray-400">
+                        <div className="flex items-center gap-1 text-xs text-gray-400 mt-0.5">
                           <User className="w-3 h-3 shrink-0" />
                           <span className="truncate">{profesorNombre}</span>
+                          {salon && (
+                            <>
+                              <span className="mx-1">•</span>
+                              <Building className="w-3 h-3 shrink-0" />
+                              <span className="truncate">{salon.nombre}</span>
+                            </>
+                          )}
                         </div>
                       </div>
                       <button
@@ -318,10 +326,24 @@ export function GroupDetailPage() {
               disabled={isCreating || loadingProf}
               className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e40af]/30 focus:border-[#1e40af] disabled:opacity-50"
             >
-              <option value="">Seleccionar profesor…</option>
-              {(profesores ?? []).map((p) => (
+              <option value="">Seleccionar colaborador…</option>
+              {(colaboradores ?? []).map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.nombre_completo}
+                  {p.full_name || p.email}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={salonId}
+              onChange={(e) => setSalonId(e.target.value)}
+              disabled={isCreating || loadingSalones}
+              className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e40af]/30 focus:border-[#1e40af] disabled:opacity-50"
+            >
+              <option value="">Salón (opcional)…</option>
+              {(salones ?? []).map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.nombre} ({s.edificio})
                 </option>
               ))}
             </select>
@@ -401,8 +423,8 @@ export function GroupDetailPage() {
                     Sin asignaciones configuradas
                   </p>
                   <p className="text-xs text-blue-600 mt-0.5">
-                    Agrega materias y profesores en el panel izquierdo antes de
-                    generar el horario.
+                    Agrega materias y colaboradores en el panel izquierdo antes
+                    de generar el horario.
                   </p>
                 </div>
               </div>
@@ -486,7 +508,9 @@ export function GroupDetailPage() {
                           </td>
                           {DIAS.map((dia, di) => {
                             const bloque = (horario[dia.key] ?? []).find(
-                              (b) => `${b.hora_inicio}-${b.hora_fin}` === slot,
+                              (b) =>
+                                `${b.hora_inicio.slice(0, 5)}-${b.hora_fin.slice(0, 5)}` ===
+                                slot,
                             );
                             const materiaObj = materias?.find(
                               (m) => m.nombre === bloque?.materia,
@@ -509,6 +533,12 @@ export function GroupDetailPage() {
                                     <p className="text-[10px] text-gray-500 truncate">
                                       {bloque.profesor}
                                     </p>
+                                    {bloque.salon && (
+                                      <p className="text-[10px] font-medium text-[#1e40af] truncate mt-0.5 flex items-center gap-1">
+                                        <Building className="w-2.5 h-2.5 shrink-0" />
+                                        {bloque.salon}
+                                      </p>
+                                    )}
                                   </div>
                                 ) : (
                                   <div className="h-full rounded-lg bg-gray-50 border border-dashed border-gray-200 p-2 text-center flex items-center justify-center min-h-[60px]">
