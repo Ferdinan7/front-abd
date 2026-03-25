@@ -13,7 +13,9 @@ import { Route as ProfessorsRouteImport } from './routes/professors'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProjectsIndexRouteImport } from './routes/projects/index'
+import { Route as ProjectsProjectIdSalonesRouteImport } from './routes/projects/$projectId/salones'
 import { Route as ProjectsProjectIdMateriasRouteImport } from './routes/projects/$projectId/materias'
+import { Route as ProjectsProjectIdColaboradoresRouteImport } from './routes/projects/$projectId/colaboradores'
 import { Route as ProjectsProjectIdGroupsIndexRouteImport } from './routes/projects/$projectId/groups/index'
 import { Route as ProjectsProjectIdGroupsGroupIdRouteImport } from './routes/projects/$projectId/groups/$groupId'
 
@@ -37,10 +39,22 @@ const ProjectsIndexRoute = ProjectsIndexRouteImport.update({
   path: '/projects/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProjectsProjectIdSalonesRoute =
+  ProjectsProjectIdSalonesRouteImport.update({
+    id: '/projects/$projectId/salones',
+    path: '/projects/$projectId/salones',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ProjectsProjectIdMateriasRoute =
   ProjectsProjectIdMateriasRouteImport.update({
     id: '/projects/$projectId/materias',
     path: '/projects/$projectId/materias',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ProjectsProjectIdColaboradoresRoute =
+  ProjectsProjectIdColaboradoresRouteImport.update({
+    id: '/projects/$projectId/colaboradores',
+    path: '/projects/$projectId/colaboradores',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ProjectsProjectIdGroupsIndexRoute =
@@ -61,7 +75,9 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/professors': typeof ProfessorsRoute
   '/projects/': typeof ProjectsIndexRoute
+  '/projects/$projectId/colaboradores': typeof ProjectsProjectIdColaboradoresRoute
   '/projects/$projectId/materias': typeof ProjectsProjectIdMateriasRoute
+  '/projects/$projectId/salones': typeof ProjectsProjectIdSalonesRoute
   '/projects/$projectId/groups/$groupId': typeof ProjectsProjectIdGroupsGroupIdRoute
   '/projects/$projectId/groups/': typeof ProjectsProjectIdGroupsIndexRoute
 }
@@ -70,7 +86,9 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/professors': typeof ProfessorsRoute
   '/projects': typeof ProjectsIndexRoute
+  '/projects/$projectId/colaboradores': typeof ProjectsProjectIdColaboradoresRoute
   '/projects/$projectId/materias': typeof ProjectsProjectIdMateriasRoute
+  '/projects/$projectId/salones': typeof ProjectsProjectIdSalonesRoute
   '/projects/$projectId/groups/$groupId': typeof ProjectsProjectIdGroupsGroupIdRoute
   '/projects/$projectId/groups': typeof ProjectsProjectIdGroupsIndexRoute
 }
@@ -80,7 +98,9 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/professors': typeof ProfessorsRoute
   '/projects/': typeof ProjectsIndexRoute
+  '/projects/$projectId/colaboradores': typeof ProjectsProjectIdColaboradoresRoute
   '/projects/$projectId/materias': typeof ProjectsProjectIdMateriasRoute
+  '/projects/$projectId/salones': typeof ProjectsProjectIdSalonesRoute
   '/projects/$projectId/groups/$groupId': typeof ProjectsProjectIdGroupsGroupIdRoute
   '/projects/$projectId/groups/': typeof ProjectsProjectIdGroupsIndexRoute
 }
@@ -91,7 +111,9 @@ export interface FileRouteTypes {
     | '/login'
     | '/professors'
     | '/projects/'
+    | '/projects/$projectId/colaboradores'
     | '/projects/$projectId/materias'
+    | '/projects/$projectId/salones'
     | '/projects/$projectId/groups/$groupId'
     | '/projects/$projectId/groups/'
   fileRoutesByTo: FileRoutesByTo
@@ -100,7 +122,9 @@ export interface FileRouteTypes {
     | '/login'
     | '/professors'
     | '/projects'
+    | '/projects/$projectId/colaboradores'
     | '/projects/$projectId/materias'
+    | '/projects/$projectId/salones'
     | '/projects/$projectId/groups/$groupId'
     | '/projects/$projectId/groups'
   id:
@@ -109,7 +133,9 @@ export interface FileRouteTypes {
     | '/login'
     | '/professors'
     | '/projects/'
+    | '/projects/$projectId/colaboradores'
     | '/projects/$projectId/materias'
+    | '/projects/$projectId/salones'
     | '/projects/$projectId/groups/$groupId'
     | '/projects/$projectId/groups/'
   fileRoutesById: FileRoutesById
@@ -119,7 +145,9 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ProfessorsRoute: typeof ProfessorsRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
+  ProjectsProjectIdColaboradoresRoute: typeof ProjectsProjectIdColaboradoresRoute
   ProjectsProjectIdMateriasRoute: typeof ProjectsProjectIdMateriasRoute
+  ProjectsProjectIdSalonesRoute: typeof ProjectsProjectIdSalonesRoute
   ProjectsProjectIdGroupsGroupIdRoute: typeof ProjectsProjectIdGroupsGroupIdRoute
   ProjectsProjectIdGroupsIndexRoute: typeof ProjectsProjectIdGroupsIndexRoute
 }
@@ -154,11 +182,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/projects/$projectId/salones': {
+      id: '/projects/$projectId/salones'
+      path: '/projects/$projectId/salones'
+      fullPath: '/projects/$projectId/salones'
+      preLoaderRoute: typeof ProjectsProjectIdSalonesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/projects/$projectId/materias': {
       id: '/projects/$projectId/materias'
       path: '/projects/$projectId/materias'
       fullPath: '/projects/$projectId/materias'
       preLoaderRoute: typeof ProjectsProjectIdMateriasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/projects/$projectId/colaboradores': {
+      id: '/projects/$projectId/colaboradores'
+      path: '/projects/$projectId/colaboradores'
+      fullPath: '/projects/$projectId/colaboradores'
+      preLoaderRoute: typeof ProjectsProjectIdColaboradoresRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/projects/$projectId/groups/': {
@@ -183,7 +225,9 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ProfessorsRoute: ProfessorsRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
+  ProjectsProjectIdColaboradoresRoute: ProjectsProjectIdColaboradoresRoute,
   ProjectsProjectIdMateriasRoute: ProjectsProjectIdMateriasRoute,
+  ProjectsProjectIdSalonesRoute: ProjectsProjectIdSalonesRoute,
   ProjectsProjectIdGroupsGroupIdRoute: ProjectsProjectIdGroupsGroupIdRoute,
   ProjectsProjectIdGroupsIndexRoute: ProjectsProjectIdGroupsIndexRoute,
 }

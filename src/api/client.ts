@@ -1,10 +1,41 @@
 import { supabase } from '@/lib/supabase'
+import type { Session } from '@supabase/supabase-js'
 
 const BASE_URL = import.meta.env.VITE_API_URL as string
 
+/**
+ * Caché de sesión activa actualizada por onAuthStateChange.
+ *
+ * Problema original: supabase.auth.getSession() puede devolver null momentáneamente:
+ *  - Justo después del redirect OAuth (sesión en hash URL, no en storage aún).
+ *  - Durante la ventana de auto-refresh del token.
+ *
+ * Solución: nos suscribimos a los cambios de sesión al iniciar el módulo para
+ * tener siempre el token más reciente disponible síncronamente.
+ */
+let _cachedSession: Session | null = null
+
+supabase.auth.onAuthStateChange((_event, session) => {
+    _cachedSession = session
+})
+
+// Pre-cargar desde storage al inicializar el módulo
+supabase.auth.getSession().then(({ data: { session } }) => {
+    if (session && !_cachedSession) _cachedSession = session
+})
+
 async function getToken(): Promise<string | null> {
+    // 1. Token en caché (actualizado por onAuthStateChange)
+    if (_cachedSession?.access_token) return _cachedSession.access_token
+
+    // 2. Fallback: leer de storage (por si el módulo cargó antes que onAuthStateChange disparara)
     const { data: { session } } = await supabase.auth.getSession()
-    return session?.access_token ?? null
+    if (session?.access_token) {
+        _cachedSession = session
+        return session.access_token
+    }
+
+    return null
 }
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {

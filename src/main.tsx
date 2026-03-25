@@ -18,7 +18,10 @@ declare module '@tanstack/react-router' {
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60,
+      staleTime: 1000 * 60 * 5,       // 5 min — datos considerados frescos
+      gcTime: 1000 * 60 * 30,          // 30 min — tiempo en caché tras desmontar
+      refetchOnWindowFocus: false,      // no re-fetch al volver al tab
+      refetchOnReconnect: false,        // no re-fetch al reconectar red
       retry: 1,
     },
   },

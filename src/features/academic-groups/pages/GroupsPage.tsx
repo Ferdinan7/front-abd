@@ -5,7 +5,7 @@ import { NuevoGrupoDialog } from "../components/NuevoGrupoDialog";
 import { EditarGrupoDialog } from "../components/EditarGrupoDialog";
 import { EliminarGrupoDialog } from "../components/EliminarGrupoDialog";
 import { Button } from "@/components/ui/button";
-import { Plus, BookOpen } from "lucide-react";
+import { Plus, BookOpen, DoorOpen, GraduationCap } from "lucide-react";
 import { useGrupos } from "@/hooks/use-grupos";
 import type { Grupo, Turno } from "@/api/grupos.api";
 
@@ -13,6 +13,14 @@ const TURNO_TIME_RANGE: Record<Turno, string> = {
   matutino: "07:00 - 14:00",
   vespertino: "14:00 - 21:00",
 };
+
+/** Devuelve el rango horario real del grupo o el rango por defecto del turno */
+function resolveTimeRange(grupo: { hora_inicio?: string; hora_fin?: string; turno: Turno }): string {
+  if (grupo.hora_inicio && grupo.hora_fin) {
+    return `${grupo.hora_inicio} - ${grupo.hora_fin}`
+  }
+  return TURNO_TIME_RANGE[grupo.turno] ?? ""
+}
 
 export function GroupsPage() {
   const { projectId: carreraId } = useParams({
@@ -75,23 +83,42 @@ export function GroupsPage() {
             Gestión de comisiones y alumnos por semestre.
           </p>
         </div>
-        <div className="flex gap-3">
+
+        {/*
+          ─── NAVEGACIÓN A SECCIONES DE CARRERA ───────────────────────────────
+          Para mover un botón a otra página/componente, cut-paste el <Button>
+          correspondiente. Cada uno navega a una ruta independiente.
+          ─────────────────────────────────────────────────────────────────────
+        */}
+        <div className="flex flex-wrap gap-2">
           <Button
-            onClick={() =>
-              navigate({
-                to: "/projects/$projectId/materias",
-                params: { projectId: carreraId },
-              })
-            }
+            onClick={() => navigate({ to: "/projects/$projectId/materias", params: { projectId: carreraId } })}
             variant="outline"
-            className="rounded-lg px-5 py-2.5 font-semibold shadow-sm transition-transform active:scale-95 flex items-center gap-2"
+            className="rounded-lg px-4 py-2.5 font-semibold shadow-sm transition-transform active:scale-95 flex items-center gap-2"
           >
-            <BookOpen className="w-5 h-5" />
-            Ver Materias
+            <BookOpen className="w-4 h-4" />
+            Materias
+          </Button>
+          {/* "Ver Profesores" ocupa el lugar donde estaba Colaboradores */}
+          <Button
+            onClick={() => navigate({ to: "/professors", search: { carreraId } })}
+            variant="outline"
+            className="rounded-lg px-4 py-2.5 font-semibold shadow-sm transition-transform active:scale-95 flex items-center gap-2"
+          >
+            <GraduationCap className="w-4 h-4" />
+            Profesores
+          </Button>
+          <Button
+            onClick={() => navigate({ to: "/projects/$projectId/salones", params: { projectId: carreraId } })}
+            variant="outline"
+            className="rounded-lg px-4 py-2.5 font-semibold shadow-sm transition-transform active:scale-95 flex items-center gap-2"
+          >
+            <DoorOpen className="w-4 h-4" />
+            Salones
           </Button>
           <Button
             onClick={() => setCreateOpen(true)}
-            className="bg-[#1e40af] hover:bg-blue-800 text-white rounded-lg px-5 py-2.5 font-semibold shadow-sm transition-transform active:scale-95 flex items-center gap-2"
+            className="bg-[#1e40af] hover:bg-blue-800 text-white rounded-lg px-4 py-2.5 font-semibold shadow-sm transition-transform active:scale-95 flex items-center gap-2"
           >
             <Plus className="w-5 h-5" />
             Nuevo Grupo
@@ -127,7 +154,7 @@ export function GroupsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {grupos.map((grupo) => {
               const turno = grupo.turno as Turno;
-              const timeRange = TURNO_TIME_RANGE[turno] ?? "";
+              const timeRange = resolveTimeRange(grupo);
               return (
                 <GroupCard
                   key={grupo.id}

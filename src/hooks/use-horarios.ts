@@ -17,7 +17,7 @@ export function useHorario(grupoId: string) {
 export function useGenerarHorario(grupoId: string) {
     const qc = useQueryClient()
     return useMutation({
-        mutationFn: (regenerar = false) => horariosApi.generar(grupoId, regenerar),
+        mutationFn: (regenerar: boolean) => horariosApi.generar(grupoId, regenerar),
         onSuccess: () => qc.invalidateQueries({ queryKey: horariosKeys.byGrupo(grupoId) }),
     })
 }

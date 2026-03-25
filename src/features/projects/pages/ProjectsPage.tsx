@@ -1,7 +1,6 @@
 import { useState } from "react";
 import {
   Plus,
-  Users,
   BookOpen,
   Code2,
   LineChart,
@@ -97,15 +96,13 @@ export function ProjectsPage() {
             Gestiona los cronogramas educativos por facultad
           </p>
         </div>
+        {/*
+          ── BOTONES DE ACCIONES GLOBALES ──────────────────────────────────
+          Para mover el botón de "Nuevo Proyecto" o agregar acciones globales,
+          edita solo este bloque.
+          ─────────────────────────────────────────────────────────────────
+        */}
         <div className="flex gap-3">
-          <Button
-            onClick={() => navigate({ to: "/professors" })}
-            variant="outline"
-            className="rounded-lg px-5 py-2.5 font-semibold shadow-sm transition-transform active:scale-95 flex items-center gap-2"
-          >
-            <Users className="w-5 h-5" />
-            Ver Profesores
-          </Button>
           <Button
             onClick={() => setCreateOpen(true)}
             className="bg-[#1e40af] hover:bg-blue-800 text-white rounded-lg px-5 py-2.5 font-semibold shadow-sm transition-transform active:scale-95 flex items-center gap-2"
@@ -156,7 +153,7 @@ export function ProjectsPage() {
               return (
                 <Link
                   key={carrera.id}
-                  to="/projects/$projectId/groups/"
+                  to="/projects/$projectId/groups"
                   params={{ projectId: carrera.id }}
                   className="block group"
                 >
@@ -166,6 +163,12 @@ export function ProjectsPage() {
                     color={variant.color}
                     onEdit={() => setEditTarget(carrera)}
                     onDelete={() => setDeleteTarget(carrera)}
+                    onVerColaboradores={() =>
+                      navigate({
+                        to: "/projects/$projectId/colaboradores",
+                        params: { projectId: carrera.id },
+                      })
+                    }
                   />
                 </Link>
               );

@@ -8,13 +8,14 @@ import {
 
 export const profesoresKeys = {
     all: ['profesores'] as const,
+    byCarrera: (carreraId: string) => ['profesores', 'carrera', carreraId] as const,
     disponibilidad: (id: string) => ['profesores', id, 'disponibilidad'] as const,
 }
 
-export function useProfesores() {
+export function useProfesores(carreraId?: string) {
     return useQuery({
-        queryKey: profesoresKeys.all,
-        queryFn: () => profesoresApi.getAll(),
+        queryKey: carreraId ? profesoresKeys.byCarrera(carreraId) : profesoresKeys.all,
+        queryFn: () => profesoresApi.getAll(carreraId),
     })
 }
 

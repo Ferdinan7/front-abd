@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { MoreHorizontal, Pencil, Trash2, BookOpen, Users } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, Users } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +14,8 @@ interface ProjectCardProps {
   color: string;
   onEdit?: () => void;
   onDelete?: () => void;
+  /** Navega a la página de colaboradores de esta carrera */
+  onVerColaboradores?: () => void;
 }
 
 export function ProjectCard({
@@ -22,6 +24,7 @@ export function ProjectCard({
   color,
   onEdit,
   onDelete,
+  onVerColaboradores,
 }: ProjectCardProps) {
   return (
     <Card className="rounded-2xl border-0 shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer bg-white p-0 gap-0">
@@ -50,10 +53,25 @@ export function ProjectCard({
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className="w-48 bg-white"
+            className="w-52 bg-white"
             onClick={(e) => e.stopPropagation()}
           >
-            <DropdownMenuSeparator />
+            {/* ── Acción de colaboradores por carrera ── */}
+            {onVerColaboradores && (
+              <>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onVerColaboradores();
+                  }}
+                  className="cursor-pointer flex items-center gap-2 font-medium"
+                >
+                  <Users className="w-4 h-4 text-[#1e40af]" />
+                  Colaboradores
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
+            )}
             <DropdownMenuItem
               onClick={(e) => {
                 e.stopPropagation();

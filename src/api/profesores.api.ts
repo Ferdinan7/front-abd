@@ -5,6 +5,11 @@ export interface Profesor {
     nombre_completo: string
     email?: string
     activo?: boolean
+    /** Presente en algunas respuestas del backend; permite filtrar por carrera en cliente */
+    carreraId?: string
+    /** URL de foto de perfil Google/OAuth (si el backend la expone en el perfil del usuario) */
+    avatarUrl?: string
+    avatar_url?: string
 }
 
 export interface CreateProfesorDto {
@@ -34,8 +39,9 @@ export interface CreateDisponibilidadDto {
 }
 
 export const profesoresApi = {
-    getAll: () =>
-        apiClient.getList<Profesor>('/profesores'),
+    /** Si se pasa carreraId se envía como query param; si el backend lo ignora devuelve todos. */
+    getAll: (carreraId?: string) =>
+        apiClient.getList<Profesor>(carreraId ? `/profesores?carrera_id=${carreraId}` : '/profesores'),
 
     create: (dto: CreateProfesorDto) =>
         apiClient.post<Profesor>('/profesores', dto),

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useSearch } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,7 +15,9 @@ import {
   useDeleteProfesor,
 } from "@/hooks/use-profesores";
 import { useCarreras } from "@/hooks/use-carreras";
+import { useColaboradores } from "@/hooks/use-colaboradores";
 import type { Profesor } from "@/api/profesores.api";
+import type { Colaborador } from "@/api/colaboradores.api";
 import {
   Plus,
   Pencil,
@@ -24,21 +26,73 @@ import {
   UserCheck,
   UserRoundX,
   Users,
-  Building2,
+  CalendarDays,
 } from "lucide-react";
+import { DisponibilidadDialog } from "../components/DisponibilidadDialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { avatarColor } from "@/lib/avatar";
+
+/** Extrae nombre y email de un colaborador sin importar el shape que devuelva el backend */
+function resolveColabIdentity(col: Colaborador): { displayName: string; email: string } {
+  const raw = col as unknown as Record<string, unknown>
+  const user = (raw.user as Record<string, unknown> | undefined) ?? {}
+  const profile = (raw.profile as Record<string, unknown> | undefined) ?? {}
+
+  const fullName =
+    (user.full_name as string | undefined) ??
+    (user.nombre as string | undefined) ??
+    (profile.full_name as string | undefined) ??
+    (profile.nombre as string | undefined) ??
+    (raw.full_name as string | undefined)
+
+  const email =
+    (user.email as string | undefined) ??
+    (profile.email as string | undefined) ??
+    (raw.email as string | undefined) ??
+    ""
+
+  return { displayName: fullName ?? email ?? "Sin nombre", email }
+}
 
 function NuevoProfesorDialog({
   open,
   onOpenChange,
+  carreraIdDefault,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
+  /** Si viene de una carrera específica, pre-selecciona y oculta el selector de carrera */
+  carreraIdDefault?: string;
 }) {
+  const modoColab = Boolean(carreraIdDefault);
+
+  const [selectedColabId, setSelectedColabId] = useState("");
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
-  const [carreraId, setCarreraId] = useState("");
+  const [carreraId, setCarreraId] = useState(carreraIdDefault ?? "");
   const { mutate, isPending, error } = useCreateProfesor();
   const { data: carreras } = useCarreras();
+  const { data: colaboradores, isLoading: loadingColab } = useColaboradores(carreraIdDefault ?? "");
+
+  const reset = () => {
+    setSelectedColabId("");
+    setNombre("");
+    setEmail("");
+    setCarreraId(carreraIdDefault ?? "");
+  };
+
+  const handleColabSelect = (colabId: string) => {
+    setSelectedColabId(colabId);
+    const col = colaboradores?.find((c) => c.id === colabId);
+    if (col) {
+      const identity = resolveColabIdentity(col);
+      setNombre(identity.displayName);
+      setEmail(identity.email);
+    } else {
+      setNombre("");
+      setEmail("");
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,9 +105,7 @@ function NuevoProfesorDialog({
       },
       {
         onSuccess: () => {
-          setNombre("");
-          setEmail("");
-          setCarreraId("");
+          reset();
           onOpenChange(false);
         },
       },
@@ -61,55 +113,107 @@ function NuevoProfesorDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(v) => { if (!isPending) { reset(); onOpenChange(v); } }}>
       <DialogContent className="sm:max-w-md bg-white">
         <DialogHeader>
           <DialogTitle className="text-xl font-extrabold text-gray-900">
             Agregar Profesor
           </DialogTitle>
           <DialogDescription>
-            Asigna el profesor a un proyecto/carrera. El correo electrónico debe
-            coincidir con la cuenta Google que usará para acceder.
+            {modoColab
+              ? "Selecciona un colaborador de la carrera para registrarlo como profesor."
+              : "Asigna el profesor a un proyecto/carrera. El correo electrónico debe coincidir con la cuenta Google que usará para acceder."}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
-          <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-gray-700">
-              Nombre completo *
-            </label>
-            <input
-              type="text"
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-              placeholder="Ej: María González López"
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e40af]/30 focus:border-[#1e40af]"
-              required
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-gray-700">
-              Proyecto / Carrera *
-            </label>
-            <select
-              value={carreraId}
-              onChange={(e) => setCarreraId(e.target.value)}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e40af]/30 focus:border-[#1e40af]"
-              required
-            >
-              <option value="">Selecciona un proyecto...</option>
-              {carreras?.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.nombre}
-                </option>
-              ))}
-            </select>
-          </div>
+
+          {/* ── Modo carrera: selector de colaboradores ── */}
+          {modoColab && (
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700">
+                Colaborador de la carrera *
+              </label>
+              {loadingColab ? (
+                <div className="h-10 bg-gray-100 rounded-lg animate-pulse" />
+              ) : !colaboradores?.length ? (
+                <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                  No hay colaboradores en esta carrera. Agrega uno desde la sección Colaboradores primero.
+                </p>
+              ) : (
+                <select
+                  value={selectedColabId}
+                  onChange={(e) => handleColabSelect(e.target.value)}
+                  disabled={isPending}
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e40af]/30 focus:border-[#1e40af]"
+                  required
+                >
+                  <option value="">Selecciona un colaborador…</option>
+                  {colaboradores.map((col) => {
+                    const { displayName, email: colEmail } = resolveColabIdentity(col);
+                    return (
+                      <option key={col.id} value={col.id}>
+                        {displayName}{colEmail ? ` — ${colEmail}` : ""}
+                      </option>
+                    );
+                  })}
+                </select>
+              )}
+            </div>
+          )}
+
+          {/* ── Modo libre: campo de nombre ── */}
+          {!modoColab && (
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700">
+                Nombre completo *
+              </label>
+              <input
+                type="text"
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
+                placeholder="Ej: María González López"
+                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e40af]/30 focus:border-[#1e40af]"
+                required
+              />
+            </div>
+          )}
+
+          {/* Nombre confirmación (solo modo colaborador, readonly) */}
+          {modoColab && nombre && (
+            <div className="rounded-lg bg-blue-50 border border-blue-100 px-3 py-2.5 space-y-0.5">
+              <p className="text-xs font-semibold text-blue-700">Se registrará como:</p>
+              <p className="text-sm font-bold text-gray-900">{nombre}</p>
+              {email && <p className="text-xs text-gray-500">{email}</p>}
+            </div>
+          )}
+
+          {/* Selector carrera — solo si NO hay carreraIdDefault */}
+          {!modoColab && (
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700">
+                Proyecto / Carrera *
+              </label>
+              <select
+                value={carreraId}
+                onChange={(e) => setCarreraId(e.target.value)}
+                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e40af]/30 focus:border-[#1e40af]"
+                required
+              >
+                <option value="">Selecciona un proyecto...</option>
+                {carreras?.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Email — editable siempre */}
           <div className="space-y-1.5">
             <label className="text-sm font-semibold text-gray-700">
               Correo electrónico
-              <span className="ml-1 text-xs font-normal text-gray-400">
-                (Google)
-              </span>
+              <span className="ml-1 text-xs font-normal text-gray-400">(Google)</span>
             </label>
             <input
               type="email"
@@ -119,10 +223,10 @@ function NuevoProfesorDialog({
               className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e40af]/30 focus:border-[#1e40af]"
             />
             <p className="text-xs text-gray-400">
-              Al ingresar su correo Google, el profesor podrá acceder al sistema
-              y ver su horario.
+              Al ingresar su correo Google, el profesor podrá acceder al sistema y ver su horario.
             </p>
           </div>
+
           {error && (
             <p className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">
               {error.message}
@@ -132,7 +236,7 @@ function NuevoProfesorDialog({
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={() => { reset(); onOpenChange(false); }}
               className="flex-1 font-semibold"
               disabled={isPending}
             >
@@ -140,7 +244,7 @@ function NuevoProfesorDialog({
             </Button>
             <Button
               type="submit"
-              disabled={isPending || !nombre.trim() || !carreraId}
+              disabled={isPending || !nombre.trim() || !carreraId || (modoColab && !selectedColabId)}
               className="flex-1 bg-[#1e40af] hover:bg-blue-800 text-white font-semibold"
             >
               {isPending ? "Guardando…" : "Agregar"}
@@ -307,15 +411,22 @@ function EliminarProfesorDialog({
 }
 
 export function ProfesoresPage() {
-  const { data: profesores, isLoading, isError } = useProfesores();
+  const { carreraId: carreraIdFromSearch } = useSearch({ from: "/professors" });
+  const { data: profesores, isLoading, isError } = useProfesores(carreraIdFromSearch);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Profesor | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Profesor | null>(null);
+  // Profesor al que se le gestiona disponibilidad
+  const [disponibilidadTarget, setDisponibilidadTarget] = useState<Profesor | null>(null);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <NuevoProfesorDialog open={createOpen} onOpenChange={setCreateOpen} />
+      <NuevoProfesorDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        carreraIdDefault={carreraIdFromSearch}
+      />
       {editTarget && (
         <EditarProfesorDialog
           open={Boolean(editTarget)}
@@ -328,6 +439,15 @@ export function ProfesoresPage() {
           open={Boolean(deleteTarget)}
           onOpenChange={(v) => !v && setDeleteTarget(null)}
           profesor={deleteTarget}
+        />
+      )}
+
+      {disponibilidadTarget && (
+        <DisponibilidadDialog
+          open={Boolean(disponibilidadTarget)}
+          onOpenChange={(v) => !v && setDisponibilidadTarget(null)}
+          profesorId={disponibilidadTarget.id}
+          profesorNombre={disponibilidadTarget.nombre_completo}
         />
       )}
 
@@ -417,12 +537,26 @@ export function ProfesoresPage() {
                   key={prof.id}
                   className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 transition-colors group"
                 >
-                  {/* Avatar */}
-                  <div className="w-10 h-10 rounded-xl bg-[#e0e7ff] flex items-center justify-center shrink-0">
-                    <span className="text-sm font-extrabold text-[#1e40af]">
-                      {prof.nombre_completo.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
+                  {/* Avatar — foto de Google OAuth si el backend la devuelve, sino iniciales coloridas */}
+                  {(() => {
+                    const googlePhoto = prof.avatar_url ?? prof.avatarUrl
+                    const fallback = avatarColor(prof.nombre_completo)
+                    const initials = prof.nombre_completo
+                      .split(" ")
+                      .slice(0, 2)
+                      .map((n) => n.charAt(0).toUpperCase())
+                      .join("")
+                    return (
+                      <Avatar className="w-10 h-10 rounded-xl shrink-0">
+                        {googlePhoto && (
+                          <AvatarImage src={googlePhoto} alt={prof.nombre_completo} className="object-cover rounded-xl" />
+                        )}
+                        <AvatarFallback className={`rounded-xl text-sm font-extrabold ${fallback}`}>
+                          {initials}
+                        </AvatarFallback>
+                      </Avatar>
+                    )
+                  })()}
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
@@ -455,14 +589,23 @@ export function ProfesoresPage() {
                   {/* Actions */}
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
+                      onClick={() => setDisponibilidadTarget(prof)}
+                      className="p-2 rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+                      title="Gestionar disponibilidad"
+                    >
+                      <CalendarDays className="w-4 h-4" />
+                    </button>
+                    <button
                       onClick={() => setEditTarget(prof)}
                       className="p-2 rounded-lg text-gray-400 hover:text-[#1e40af] hover:bg-blue-50 transition-colors"
+                      title="Editar profesor"
                     >
                       <Pencil className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => setDeleteTarget(prof)}
                       className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                      title="Eliminar profesor"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

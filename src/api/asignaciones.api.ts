@@ -5,18 +5,23 @@ export interface Asignacion {
     profesor_id: string
     materia_id: string
     grupoId: string
+    salon_id?: string
     profesor?: { id: string; nombre_completo: string }
     materia?: { id: string; nombre: string; horas_semanales: number }
+    salon?: { id: string; nombre: string }
 }
 
 export interface CreateAsignacionDto {
     profesor_id: string
     materia_id: string
+    /** El backend aún no persiste salon_id en asignaciones, pero se envía por compatibilidad futura */
+    salon_id?: string
 }
 
 export interface UpdateAsignacionDto {
     profesor_id?: string
     materia_id?: string
+    salon_id?: string
 }
 
 export const asignacionesApi = {

@@ -5,6 +5,8 @@ export interface HorarioBloqueItem {
     hora_fin: string
     materia: string
     profesor: string
+    salon?: string
+    tipo?: 'clase' | 'receso' | string
 }
 
 export interface HorarioData {

@@ -11,6 +11,7 @@ interface GroupCardProps {
     shift: "matutino" | "vespertino"
     level: string | number
     name: string
+    /** Rango de horas a mostrar (ej. "07:00 - 14:00") */
     timeRange: string
     onEdit?: () => void
     onDelete?: () => void
