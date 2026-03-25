@@ -9,16 +9,19 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ProfessorsRouteImport } from './routes/professors'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProjectsIndexRouteImport } from './routes/projects/index'
-import { Route as ProjectsProjectIdSalonesRouteImport } from './routes/projects/$projectId/salones'
 import { Route as ProjectsProjectIdMateriasRouteImport } from './routes/projects/$projectId/materias'
-import { Route as ProjectsProjectIdConfiguracionRouteImport } from './routes/projects/$projectId/configuracion'
-import { Route as ProjectsProjectIdColaboradoresRouteImport } from './routes/projects/$projectId/colaboradores'
 import { Route as ProjectsProjectIdGroupsIndexRouteImport } from './routes/projects/$projectId/groups/index'
 import { Route as ProjectsProjectIdGroupsGroupIdRouteImport } from './routes/projects/$projectId/groups/$groupId'
 
+const ProfessorsRoute = ProfessorsRouteImport.update({
+  id: '/professors',
+  path: '/professors',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -34,28 +37,10 @@ const ProjectsIndexRoute = ProjectsIndexRouteImport.update({
   path: '/projects/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProjectsProjectIdSalonesRoute =
-  ProjectsProjectIdSalonesRouteImport.update({
-    id: '/projects/$projectId/salones',
-    path: '/projects/$projectId/salones',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ProjectsProjectIdMateriasRoute =
   ProjectsProjectIdMateriasRouteImport.update({
     id: '/projects/$projectId/materias',
     path: '/projects/$projectId/materias',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ProjectsProjectIdConfiguracionRoute =
-  ProjectsProjectIdConfiguracionRouteImport.update({
-    id: '/projects/$projectId/configuracion',
-    path: '/projects/$projectId/configuracion',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ProjectsProjectIdColaboradoresRoute =
-  ProjectsProjectIdColaboradoresRouteImport.update({
-    id: '/projects/$projectId/colaboradores',
-    path: '/projects/$projectId/colaboradores',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ProjectsProjectIdGroupsIndexRoute =
@@ -74,22 +59,18 @@ const ProjectsProjectIdGroupsGroupIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/professors': typeof ProfessorsRoute
   '/projects/': typeof ProjectsIndexRoute
-  '/projects/$projectId/colaboradores': typeof ProjectsProjectIdColaboradoresRoute
-  '/projects/$projectId/configuracion': typeof ProjectsProjectIdConfiguracionRoute
   '/projects/$projectId/materias': typeof ProjectsProjectIdMateriasRoute
-  '/projects/$projectId/salones': typeof ProjectsProjectIdSalonesRoute
   '/projects/$projectId/groups/$groupId': typeof ProjectsProjectIdGroupsGroupIdRoute
   '/projects/$projectId/groups/': typeof ProjectsProjectIdGroupsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/professors': typeof ProfessorsRoute
   '/projects': typeof ProjectsIndexRoute
-  '/projects/$projectId/colaboradores': typeof ProjectsProjectIdColaboradoresRoute
-  '/projects/$projectId/configuracion': typeof ProjectsProjectIdConfiguracionRoute
   '/projects/$projectId/materias': typeof ProjectsProjectIdMateriasRoute
-  '/projects/$projectId/salones': typeof ProjectsProjectIdSalonesRoute
   '/projects/$projectId/groups/$groupId': typeof ProjectsProjectIdGroupsGroupIdRoute
   '/projects/$projectId/groups': typeof ProjectsProjectIdGroupsIndexRoute
 }
@@ -97,11 +78,9 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/professors': typeof ProfessorsRoute
   '/projects/': typeof ProjectsIndexRoute
-  '/projects/$projectId/colaboradores': typeof ProjectsProjectIdColaboradoresRoute
-  '/projects/$projectId/configuracion': typeof ProjectsProjectIdConfiguracionRoute
   '/projects/$projectId/materias': typeof ProjectsProjectIdMateriasRoute
-  '/projects/$projectId/salones': typeof ProjectsProjectIdSalonesRoute
   '/projects/$projectId/groups/$groupId': typeof ProjectsProjectIdGroupsGroupIdRoute
   '/projects/$projectId/groups/': typeof ProjectsProjectIdGroupsIndexRoute
 }
@@ -110,33 +89,27 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/professors'
     | '/projects/'
-    | '/projects/$projectId/colaboradores'
-    | '/projects/$projectId/configuracion'
     | '/projects/$projectId/materias'
-    | '/projects/$projectId/salones'
     | '/projects/$projectId/groups/$groupId'
     | '/projects/$projectId/groups/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
+    | '/professors'
     | '/projects'
-    | '/projects/$projectId/colaboradores'
-    | '/projects/$projectId/configuracion'
     | '/projects/$projectId/materias'
-    | '/projects/$projectId/salones'
     | '/projects/$projectId/groups/$groupId'
     | '/projects/$projectId/groups'
   id:
     | '__root__'
     | '/'
     | '/login'
+    | '/professors'
     | '/projects/'
-    | '/projects/$projectId/colaboradores'
-    | '/projects/$projectId/configuracion'
     | '/projects/$projectId/materias'
-    | '/projects/$projectId/salones'
     | '/projects/$projectId/groups/$groupId'
     | '/projects/$projectId/groups/'
   fileRoutesById: FileRoutesById
@@ -144,17 +117,22 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
+  ProfessorsRoute: typeof ProfessorsRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
-  ProjectsProjectIdColaboradoresRoute: typeof ProjectsProjectIdColaboradoresRoute
-  ProjectsProjectIdConfiguracionRoute: typeof ProjectsProjectIdConfiguracionRoute
   ProjectsProjectIdMateriasRoute: typeof ProjectsProjectIdMateriasRoute
-  ProjectsProjectIdSalonesRoute: typeof ProjectsProjectIdSalonesRoute
   ProjectsProjectIdGroupsGroupIdRoute: typeof ProjectsProjectIdGroupsGroupIdRoute
   ProjectsProjectIdGroupsIndexRoute: typeof ProjectsProjectIdGroupsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/professors': {
+      id: '/professors'
+      path: '/professors'
+      fullPath: '/professors'
+      preLoaderRoute: typeof ProfessorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -176,32 +154,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/projects/$projectId/salones': {
-      id: '/projects/$projectId/salones'
-      path: '/projects/$projectId/salones'
-      fullPath: '/projects/$projectId/salones'
-      preLoaderRoute: typeof ProjectsProjectIdSalonesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/projects/$projectId/materias': {
       id: '/projects/$projectId/materias'
       path: '/projects/$projectId/materias'
       fullPath: '/projects/$projectId/materias'
       preLoaderRoute: typeof ProjectsProjectIdMateriasRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/projects/$projectId/configuracion': {
-      id: '/projects/$projectId/configuracion'
-      path: '/projects/$projectId/configuracion'
-      fullPath: '/projects/$projectId/configuracion'
-      preLoaderRoute: typeof ProjectsProjectIdConfiguracionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/projects/$projectId/colaboradores': {
-      id: '/projects/$projectId/colaboradores'
-      path: '/projects/$projectId/colaboradores'
-      fullPath: '/projects/$projectId/colaboradores'
-      preLoaderRoute: typeof ProjectsProjectIdColaboradoresRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/projects/$projectId/groups/': {
@@ -224,11 +181,9 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
+  ProfessorsRoute: ProfessorsRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
-  ProjectsProjectIdColaboradoresRoute: ProjectsProjectIdColaboradoresRoute,
-  ProjectsProjectIdConfiguracionRoute: ProjectsProjectIdConfiguracionRoute,
   ProjectsProjectIdMateriasRoute: ProjectsProjectIdMateriasRoute,
-  ProjectsProjectIdSalonesRoute: ProjectsProjectIdSalonesRoute,
   ProjectsProjectIdGroupsGroupIdRoute: ProjectsProjectIdGroupsGroupIdRoute,
   ProjectsProjectIdGroupsIndexRoute: ProjectsProjectIdGroupsIndexRoute,
 }
