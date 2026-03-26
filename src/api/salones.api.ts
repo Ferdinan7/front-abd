@@ -7,6 +7,7 @@ export interface Salon {
     nombre: string
     edificio?: string
     tipo?: SalonTipo
+    activo?: boolean
     carreraId?: string
 }
 
@@ -20,6 +21,7 @@ export interface UpdateSalonDto {
     nombre?: string
     edificio?: string
     tipo?: SalonTipo
+    activo?: boolean
 }
 
 export const salonesApi = {

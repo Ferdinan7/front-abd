@@ -11,6 +11,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useCreateCarrera } from "@/hooks/use-carreras"
 
+const COLOR_PALETTE = [
+    "#3B82F6", "#6366F1", "#8B5CF6", "#EC4899",
+    "#10B981", "#F59E0B", "#EF4444", "#06B6D4",
+]
+
 interface NuevaCarreraDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
@@ -18,18 +23,18 @@ interface NuevaCarreraDialogProps {
 
 export function NuevaCarreraDialog({ open, onOpenChange }: NuevaCarreraDialogProps) {
     const [nombre, setNombre] = useState("")
-    const [descripcion, setDescripcion] = useState("")
+    const [color, setColor] = useState(COLOR_PALETTE[0])
     const { mutate: createCarrera, isPending, error } = useCreateCarrera()
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
         if (!nombre.trim()) return
         createCarrera(
-            { nombre: nombre.trim(), descripcion: descripcion.trim() || undefined },
+            { nombre: nombre.trim(), color },
             {
                 onSuccess: () => {
                     setNombre("")
-                    setDescripcion("")
+                    setColor(COLOR_PALETTE[0])
                     onOpenChange(false)
                 },
             }
@@ -39,7 +44,7 @@ export function NuevaCarreraDialog({ open, onOpenChange }: NuevaCarreraDialogPro
     const handleOpenChange = (value: boolean) => {
         if (!isPending) {
             setNombre("")
-            setDescripcion("")
+            setColor(COLOR_PALETTE[0])
             onOpenChange(value)
         }
     }
@@ -72,14 +77,31 @@ export function NuevaCarreraDialog({ open, onOpenChange }: NuevaCarreraDialogPro
 
                     <div className="space-y-1.5">
                         <label className="text-sm font-semibold text-gray-700">
-                            Descripción <span className="text-gray-400 font-normal">(opcional)</span>
+                            Color <span className="text-gray-400 font-normal">(opcional)</span>
                         </label>
-                        <Input
-                            placeholder="Ej. Carrera de 4 años orientada a desarrollo web"
-                            value={descripcion}
-                            onChange={(e) => setDescripcion(e.target.value)}
-                            disabled={isPending}
-                        />
+                        <div className="flex items-center gap-2 flex-wrap">
+                            {COLOR_PALETTE.map((c) => (
+                                <button
+                                    key={c}
+                                    type="button"
+                                    onClick={() => setColor(c)}
+                                    disabled={isPending}
+                                    className={`w-7 h-7 rounded-full border-2 transition-transform hover:scale-110 ${
+                                        color === c ? "border-gray-900 scale-110" : "border-transparent"
+                                    }`}
+                                    style={{ backgroundColor: c }}
+                                    title={c}
+                                />
+                            ))}
+                            <input
+                                type="color"
+                                value={color}
+                                onChange={(e) => setColor(e.target.value)}
+                                disabled={isPending}
+                                className="w-7 h-7 rounded-full border border-gray-200 cursor-pointer p-0.5"
+                                title="Color personalizado"
+                            />
+                        </div>
                     </div>
 
                     {error && (

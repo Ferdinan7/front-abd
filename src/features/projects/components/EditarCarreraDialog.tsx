@@ -12,6 +12,11 @@ import { Input } from "@/components/ui/input"
 import { useUpdateCarrera } from "@/hooks/use-carreras"
 import type { Carrera } from "@/api/carreras.api"
 
+const COLOR_PALETTE = [
+    "#3B82F6", "#6366F1", "#8B5CF6", "#EC4899",
+    "#10B981", "#F59E0B", "#EF4444", "#06B6D4",
+]
+
 interface EditarCarreraDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
@@ -20,13 +25,13 @@ interface EditarCarreraDialogProps {
 
 export function EditarCarreraDialog({ open, onOpenChange, carrera }: EditarCarreraDialogProps) {
     const [nombre, setNombre] = useState(carrera.nombre)
-    const [descripcion, setDescripcion] = useState(carrera.descripcion ?? "")
+    const [color, setColor] = useState(carrera.color ?? COLOR_PALETTE[0])
     const { mutate: updateCarrera, isPending, error } = useUpdateCarrera()
 
     useEffect(() => {
         if (open) {
             setNombre(carrera.nombre)
-            setDescripcion(carrera.descripcion ?? "")
+            setColor(carrera.color ?? COLOR_PALETTE[0])
         }
     }, [open, carrera])
 
@@ -34,10 +39,7 @@ export function EditarCarreraDialog({ open, onOpenChange, carrera }: EditarCarre
         e.preventDefault()
         if (!nombre.trim()) return
         updateCarrera(
-            {
-                id: carrera.id,
-                dto: { nombre: nombre.trim(), descripcion: descripcion.trim() || undefined },
-            },
+            { id: carrera.id, dto: { nombre: nombre.trim(), color } },
             { onSuccess: () => onOpenChange(false) }
         )
     }
@@ -69,13 +71,31 @@ export function EditarCarreraDialog({ open, onOpenChange, carrera }: EditarCarre
 
                     <div className="space-y-1.5">
                         <label className="text-sm font-semibold text-gray-700">
-                            Descripción <span className="text-gray-400 font-normal">(opcional)</span>
+                            Color
                         </label>
-                        <Input
-                            value={descripcion}
-                            onChange={(e) => setDescripcion(e.target.value)}
-                            disabled={isPending}
-                        />
+                        <div className="flex items-center gap-2 flex-wrap">
+                            {COLOR_PALETTE.map((c) => (
+                                <button
+                                    key={c}
+                                    type="button"
+                                    onClick={() => setColor(c)}
+                                    disabled={isPending}
+                                    className={`w-7 h-7 rounded-full border-2 transition-transform hover:scale-110 ${
+                                        color === c ? "border-gray-900 scale-110" : "border-transparent"
+                                    }`}
+                                    style={{ backgroundColor: c }}
+                                    title={c}
+                                />
+                            ))}
+                            <input
+                                type="color"
+                                value={color}
+                                onChange={(e) => setColor(e.target.value)}
+                                disabled={isPending}
+                                className="w-7 h-7 rounded-full border border-gray-200 cursor-pointer p-0.5"
+                                title="Color personalizado"
+                            />
+                        </div>
                     </div>
 
                     {error && (

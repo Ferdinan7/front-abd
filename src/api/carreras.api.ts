@@ -3,18 +3,19 @@ import { apiClient } from './client'
 export interface Carrera {
     id: string
     nombre: string
-    descripcion?: string
-    createdAt?: string
+    color?: string
+    created_at?: string
+    roles_carrera?: { rol: string }[]
 }
 
 export interface CreateCarreraDto {
     nombre: string
-    descripcion?: string
+    color?: string
 }
 
 export interface UpdateCarreraDto {
     nombre?: string
-    descripcion?: string
+    color?: string
 }
 
 export const carrerasApi = {

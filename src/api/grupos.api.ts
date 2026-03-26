@@ -62,9 +62,10 @@ export const gruposApi = {
     create: (carreraId: string, dto: CreateGrupoDto) =>
         apiClient.post<Grupo>(`/carreras/${carreraId}/grupos`, dto),
 
+    // El backend monta PUT/DELETE en /api/v1/:id (sin prefijo /grupos)
     update: (id: string, dto: UpdateGrupoDto) =>
-        apiClient.put<Grupo>(`/grupos/${id}`, dto),
+        apiClient.put<Grupo>(`/${id}`, dto),
 
     remove: (id: string) =>
-        apiClient.delete(`/grupos/${id}`),
+        apiClient.delete(`/${id}`),
 }
